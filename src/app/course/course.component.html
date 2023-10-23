@@ -1,19 +1,13 @@
 <div class="course">
 
     <ng-container *ngIf="(course$ | async) as course">
-
         <h2>{{course?.description}}</h2>
-
         <img class="course-thumbnail" [src]="course?.iconUrl">
-
     </ng-container>
 
     <mat-form-field class="search-bar">
-
         <input matInput placeholder="Type your search" #searchInput autocomplete="off">
-
     </mat-form-field>
-
 
     <table class="lessons-table mat-elevation-z7" *ngIf="(lessons$ | async) as lessons">
 
@@ -31,11 +25,4 @@
 
     </table>
 
-
 </div>
-
-
-
-
-
-
