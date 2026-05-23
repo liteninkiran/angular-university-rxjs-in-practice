@@ -9,7 +9,7 @@ import 'zone.js/dist/fake-async-test';
 import { getTestBed } from '@angular/core/testing';
 import {
   BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting
+  platformBrowserDynamicTesting,
 } from '@angular/platform-browser-dynamic/testing';
 
 // Unfortunately there's no typing for the `__karma__` variable. Just declare it as any.
@@ -21,9 +21,10 @@ __karma__.loaded = function () {};
 // First, initialize the Angular testing environment.
 getTestBed().initTestEnvironment(
   BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting(), {
-    teardown: { destroyAfterEach: false }
-}
+  platformBrowserDynamicTesting(),
+  {
+    teardown: { destroyAfterEach: false },
+  },
 );
 // Finally, start Karma to run the tests.
 __karma__.start();
