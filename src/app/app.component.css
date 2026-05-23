@@ -1,0 +1,12 @@
+
+body {
+    margin: 0;
+}
+
+main {
+    margin: 30px;
+}
+
+mat-icon{
+    vertical-align: middle;
+}
