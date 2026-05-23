@@ -9,5 +9,20 @@ import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 export class AboutComponent implements OnInit {
   constructor() {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    document.addEventListener('click', (evt) => {
+      console.log(evt);
+    });
+
+    let counter = 0;
+
+    setInterval(() => {
+      console.log(counter);
+      counter++;
+    }, 1000);
+
+    setTimeout(() => {
+      console.log('Finished');
+    }, 5000);
+  }
 }
