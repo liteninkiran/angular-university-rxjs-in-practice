@@ -1,4 +1,5 @@
-import { Courses, Lessons } from './models';
+import { Courses } from '../src/app/model/course';
+import { Lessons } from '../src/app/model/lesson';
 
 export const COURSES: Courses = {
   0: {

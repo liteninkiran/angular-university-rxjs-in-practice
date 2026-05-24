@@ -1,9 +1,13 @@
-export interface Course {
+export type Course = {
   id: number;
   description: string;
   iconUrl: string;
-  courseListIcon: string;
+  courseListIcon?: string;
   longDescription: string;
-  category: string;
-  lessonsCount: number;
-}
+  category: CourseCategory;
+  lessonsCount?: number;
+};
+
+export type CourseCategory = 'BEGINNER' | 'ADVANCED';
+
+export type Courses = Record<string, Course>;

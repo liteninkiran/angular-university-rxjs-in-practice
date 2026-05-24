@@ -1,6 +1,5 @@
 import { Observable, Observer } from 'rxjs';
-import { Course } from '../model/course';
-import { Courses } from '../../../server/models';
+import { Courses } from '../model/course';
 
 type CoursesResponse = {
   payload: Courses;
