@@ -8,6 +8,6 @@ export type Course = {
   lessonsCount?: number;
 };
 
-export type CourseCategory = 'BEGINNER' | 'ADVANCED';
+export type CourseCategory = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
 
 export type Courses = Record<string, Course>;
