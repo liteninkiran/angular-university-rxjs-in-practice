@@ -1,10 +1,8 @@
 import { Observable, Observer } from 'rxjs';
 import { Courses } from '../model/course';
 
-type CoursesResponse = {
-  payload: Courses;
-};
-export type CoursesObserver = Observer<CoursesResponse>;
+type CoursesResponse = { payload: Courses };
+type CoursesObserver = Observer<CoursesResponse>;
 
 const emitAndComplete = (observer: CoursesObserver, body: any) => {
   observer.next(body);
