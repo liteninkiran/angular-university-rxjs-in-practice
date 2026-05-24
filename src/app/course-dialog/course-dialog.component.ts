@@ -8,8 +8,13 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { Course } from '../model/course';
-import { FormBuilder, Validators, FormGroup } from '@angular/forms';
+import { Course, CourseCategory } from '../model/course';
+import {
+  FormBuilder,
+  Validators,
+  FormGroup,
+  FormControl,
+} from '@angular/forms';
 import moment from 'moment';
 import { fromEvent } from 'rxjs';
 import {
@@ -21,6 +26,23 @@ import {
 } from 'rxjs/operators';
 import { fromPromise } from 'rxjs/internal-compatibility';
 
+type CourseData = {
+  description: string;
+  category: CourseCategory;
+  releasedAt: moment.Moment;
+  longDescription: string;
+};
+
+type CourseForm = {
+  [K in keyof CourseData]: FormControl<CourseData[K]>;
+};
+
+const getInit = (changes: Partial<CourseData>): RequestInit => ({
+  method: 'PUT',
+  body: JSON.stringify(changes),
+  headers: { 'content-type': 'application/json' },
+});
+
 @Component({
   selector: 'course-dialog',
   templateUrl: './course-dialog.component.html',
@@ -28,41 +50,25 @@ import { fromPromise } from 'rxjs/internal-compatibility';
   standalone: false,
 })
 export class CourseDialogComponent implements OnInit, AfterViewInit {
-  form: FormGroup;
+  form: FormGroup<CourseForm>;
   course: Course;
 
   @ViewChild('saveButton', { static: true }) saveButton!: ElementRef;
   @ViewChild('searchInput', { static: true }) searchInput!: ElementRef;
 
   constructor(
-    private fb: FormBuilder,
+    private formBuilder: FormBuilder,
     private dialogRef: MatDialogRef<CourseDialogComponent>,
     @Inject(MAT_DIALOG_DATA) course: Course,
   ) {
     this.course = course;
-
-    this.form = this.fb.group({
-      description: [course.description, Validators.required],
-      category: [course.category, Validators.required],
-      releasedAt: [moment(), Validators.required],
-      longDescription: [course.longDescription, Validators.required],
-    });
+    this.form = this.formBuilder.nonNullable.group<CourseForm>(
+      this.getCourseForm(),
+    );
   }
 
   ngOnInit() {
-    this.form.valueChanges
-      .pipe(filter(() => this.form.valid))
-      .subscribe((changes) => {
-        const init: RequestInit = {
-          method: 'PUT',
-          body: JSON.stringify(changes),
-          headers: { 'content-type': 'application/json' },
-        };
-        const saveCourse$ = fromPromise(
-          fetch(`/api/courses/${this.course.id}`, init),
-        );
-        saveCourse$.subscribe();
-      });
+    this.subscribeToFormChanges();
   }
 
   ngAfterViewInit() {}
@@ -72,4 +78,31 @@ export class CourseDialogComponent implements OnInit, AfterViewInit {
   }
 
   save() {}
+
+  saveCourse(changes: Partial<CourseData>) {
+    return fromPromise(
+      fetch(`/api/courses/${this.course.id}`, getInit(changes)),
+    );
+  }
+
+  subscribeToFormChanges() {
+    const callback = (changes: Partial<CourseData>) => this.saveCourse(changes);
+    this.form.valueChanges
+      .pipe(
+        filter(() => this.form.valid),
+        concatMap(callback),
+      )
+      .subscribe();
+  }
+
+  getCourseForm(): CourseForm {
+    const fb = this.formBuilder.nonNullable;
+    const rqd = Validators.required;
+    return {
+      description: fb.control(this.course.description, rqd),
+      category: fb.control(this.course.category, rqd),
+      releasedAt: fb.control(moment(), rqd),
+      longDescription: fb.control(this.course.longDescription, rqd),
+    };
+  }
 }
