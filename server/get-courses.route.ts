@@ -11,7 +11,8 @@ export function getAllCourses(req: Request, res: Response) {
     res.status(500).json({ message: 'random error occurred.' });
   } else {
     setTimeout(() => {
-      res.status(200).json({ payload: Object.values(COURSES) });
+      // res.status(200).json({ payload: Object.values(COURSES) });
+      res.status(200).json({ payload: COURSES });
     }, 200);
   }
 }
