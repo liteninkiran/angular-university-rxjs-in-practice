@@ -37,11 +37,25 @@ type CourseForm = {
   [K in keyof CourseData]: FormControl<CourseData[K]>;
 };
 
-const getInit = (changes: Partial<CourseData>): RequestInit => ({
+/*
+type CourseForm = {
+  description: FormControl<string>;
+  category: FormControl<CourseCategory>;
+  releasedAt: FormControl<moment.Moment>;
+  longDescription: FormControl<string>;
+}
+*/
+
+type Changes = Partial<CourseData>;
+
+const getInit = (changes: Changes): RequestInit => ({
   method: 'PUT',
   body: JSON.stringify(changes),
   headers: { 'content-type': 'application/json' },
 });
+
+const saveCourse = (id: number, changes: Changes) =>
+  fromPromise(fetch(`/api/courses/${id}`, getInit(changes)));
 
 @Component({
   selector: 'course-dialog',
@@ -79,21 +93,12 @@ export class CourseDialogComponent implements OnInit, AfterViewInit {
 
   save() {}
 
-  saveCourse(changes: Partial<CourseData>) {
-    return fromPromise(
-      fetch(`/api/courses/${this.course.id}`, getInit(changes)),
-    );
-  }
-
   subscribeToFormChanges() {
-    const filterCallback = () => this.form.valid;
-    const concatMapCallback = (changes: Partial<CourseData>) =>
-      this.saveCourse(changes);
-    const changes$ = this.form.valueChanges.pipe(
-      filter(filterCallback),
-      concatMap(concatMapCallback),
-    );
-    changes$.subscribe();
+    const validOnly = () => this.form.valid;
+    const save = (changes: Changes) => saveCourse(this.course.id, changes);
+    const changes$ = this.form.valueChanges;
+    const saveStream$ = changes$.pipe(filter(validOnly), mergeMap(save));
+    saveStream$.subscribe();
   }
 
   getCourseForm(): CourseForm {
