@@ -1,23 +1,27 @@
 import { Observable, Observer } from 'rxjs';
-import { Courses } from '../model/course';
 
-type CoursesResponse = { payload: Courses };
-type CoursesObserver = Observer<CoursesResponse>;
-
-const emitAndComplete = (observer: CoursesObserver, body: any) => {
-  observer.next(body);
-  observer.complete();
+export type HttpResponse<T> = {
+  payload: T;
 };
 
-export const createHttpObservable = (url: string) => {
-  const observer = (observer: CoursesObserver) => {
+const emitAndComplete =
+  <T>(observer: Observer<T>) =>
+  (body: T) => {
+    observer.next(body);
+    observer.complete();
+  };
+
+export const createHttpObservable = <T>(url: string) => {
+  const observer = (observer: Observer<HttpResponse<T>>) => {
     const controller = new AbortController();
-    const signal = controller.signal;
-    fetch(url, { signal })
+
+    fetch(url, { signal: controller.signal })
       .then((res) => res.json())
-      .then((body) => emitAndComplete(observer, body))
+      .then(emitAndComplete<HttpResponse<T>>(observer))
       .catch((err) => observer.error(err));
+
     return () => controller.abort();
   };
+
   return new Observable(observer);
 };

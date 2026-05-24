@@ -6,4 +6,4 @@ export type Lesson = {
   courseId: number;
 };
 
-export type Lessons = Record<string, Lesson>;
+export type Lessons = Lesson[];

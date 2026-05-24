@@ -11,8 +11,7 @@ export function getAllCourses(req: Request, res: Response) {
     res.status(500).json({ message: 'random error occurred.' });
   } else {
     setTimeout(() => {
-      // res.status(200).json({ payload: Object.values(COURSES) });
-      res.status(200).json({ payload: COURSES });
+      res.status(200).json({ payload: Object.values(COURSES) });
     }, 200);
   }
 }
@@ -21,6 +20,5 @@ export function getCourseById(req: Request, res: Response) {
   const courseId = req.params['id'];
   const courses: any = Object.values(COURSES);
   const course = courses.find((course: Course) => course.id === +courseId);
-
-  res.status(200).json(course);
+  res.status(200).json({ payload: course });
 }

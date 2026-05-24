@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Course } from '../model/course';
+import { Course, CourseCategory } from '../model/course';
 import { interval, noop, Observable, of, timer } from 'rxjs';
 import {
   catchError,
@@ -13,11 +13,11 @@ import { createHttpObservable } from '../common/util';
 
 type CoursesObservable = Observable<Course[]>;
 
-const beginnerCourse = (course: Course) => course.category === 'BEGINNER';
-const advancedCourse = (course: Course) => course.category === 'ADVANCED';
+const beginner = (courses: Course[]) => courses.filter(byCategory('BEGINNER'));
+const advanced = (courses: Course[]) => courses.filter(byCategory('ADVANCED'));
 
-const beginnerCourses = (courses: Course[]) => courses.filter(beginnerCourse);
-const advancedCourses = (courses: Course[]) => courses.filter(advancedCourse);
+const byCategory = (category: CourseCategory) => (course: Course) =>
+  course.category === category;
 
 @Component({
   selector: 'home',
@@ -32,12 +32,12 @@ export class HomeComponent implements OnInit {
   constructor() {}
 
   ngOnInit() {
-    const http$ = createHttpObservable('/api/courses');
+    const http$ = createHttpObservable<Course[]>('/api/courses');
     const courses$ = http$.pipe(
-      map((res) => Object.values(res.payload)),
+      map((res) => res.payload),
       shareReplay(),
     );
-    this.beginnerCourses$ = courses$.pipe(map(beginnerCourses));
-    this.advancedCourses$ = courses$.pipe(map(advancedCourses));
+    this.beginnerCourses$ = courses$.pipe(map(beginner));
+    this.advancedCourses$ = courses$.pipe(map(advanced));
   }
 }
