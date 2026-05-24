@@ -86,13 +86,14 @@ export class CourseDialogComponent implements OnInit, AfterViewInit {
   }
 
   subscribeToFormChanges() {
-    const callback = (changes: Partial<CourseData>) => this.saveCourse(changes);
-    this.form.valueChanges
-      .pipe(
-        filter(() => this.form.valid),
-        concatMap(callback),
-      )
-      .subscribe();
+    const filterCallback = () => this.form.valid;
+    const concatMapCallback = (changes: Partial<CourseData>) =>
+      this.saveCourse(changes);
+    const changes$ = this.form.valueChanges.pipe(
+      filter(filterCallback),
+      concatMap(concatMapCallback),
+    );
+    changes$.subscribe();
   }
 
   getCourseForm(): CourseForm {
