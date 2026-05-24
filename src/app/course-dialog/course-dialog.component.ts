@@ -67,7 +67,8 @@ export class CourseDialogComponent implements OnInit, AfterViewInit {
   form: FormGroup<CourseForm>;
   course: Course;
 
-  @ViewChild('saveButton', { static: true }) saveButton!: ElementRef;
+  @ViewChild('saveButton', { read: ElementRef })
+  saveButton!: ElementRef<HTMLButtonElement>;
   @ViewChild('searchInput', { static: true }) searchInput!: ElementRef;
 
   constructor(
@@ -85,7 +86,9 @@ export class CourseDialogComponent implements OnInit, AfterViewInit {
     this.subscribeToFormChanges();
   }
 
-  ngAfterViewInit() {}
+  ngAfterViewInit() {
+    this.subscribeToSaveClick();
+  }
 
   close() {
     this.dialogRef.close();
@@ -93,11 +96,18 @@ export class CourseDialogComponent implements OnInit, AfterViewInit {
 
   save() {}
 
+  subscribeToSaveClick() {
+    const save = () => saveCourse(this.course.id, this.form.value);
+    const el = this.saveButton.nativeElement;
+    const click$ = fromEvent(el, 'click').pipe(exhaustMap(save));
+    click$.subscribe();
+  }
+
   subscribeToFormChanges() {
     const validOnly = () => this.form.valid;
     const save = (changes: Changes) => saveCourse(this.course.id, changes);
     const changes$ = this.form.valueChanges;
-    const saveStream$ = changes$.pipe(filter(validOnly), mergeMap(save));
+    const saveStream$ = changes$.pipe(filter(validOnly), exhaustMap(save));
     saveStream$.subscribe();
   }
 
