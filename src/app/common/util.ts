@@ -11,10 +11,13 @@ const emitAndComplete = (observer: CoursesObserver, body: any) => {
 
 export const createHttpObservable = (url: string) => {
   const observer = (observer: CoursesObserver) => {
-    fetch(url)
+    const controller = new AbortController();
+    const signal = controller.signal;
+    fetch(url, { signal })
       .then((res) => res.json())
       .then((body) => emitAndComplete(observer, body))
       .catch((err) => observer.error(err));
+    return () => controller.abort();
   };
   return new Observable(observer);
 };
