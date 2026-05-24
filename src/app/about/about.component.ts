@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
-import { fromEvent, interval, timer } from 'rxjs';
+import { noop, Observable, Observer } from 'rxjs';
+import { Course } from '../model/course';
 
 @Component({
   selector: 'about',
@@ -11,16 +12,19 @@ export class AboutComponent implements OnInit {
   constructor() {}
 
   ngOnInit() {
-    // const interval$ = interval(1000);
-    const interval$ = timer(3000, 1000);
-    const sub = interval$.subscribe((val) => console.log(`Stream 1: ${val}`));
-    // interval$.subscribe((val) => console.log(`Stream 2: ${val}`));
-    setTimeout(() => sub.unsubscribe(), 6000);
-
-    const click$ = fromEvent(document, 'click');
-    click$.subscribe(
-      (event) => console.log(event),
-      (error) => console.log(error),
+    const observer = (observer: Observer<Course[]>) => {
+      fetch('/api/courses')
+        .then((res) => res.json())
+        .then((body) => {
+          observer.next(body);
+          observer.complete();
+        })
+        .catch((err) => observer.error(err));
+    };
+    const http$: Observable<Course[]> = new Observable(observer);
+    http$.subscribe(
+      (courses) => console.log(courses),
+      noop,
       () => console.log('Completed'),
     );
   }
