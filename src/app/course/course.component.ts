@@ -18,7 +18,7 @@ import {
 import { fromEvent, Observable } from 'rxjs';
 import { Lesson } from '../model/lesson';
 import { createHttpObservable } from '../common/util';
-import { debug } from '../common/debug';
+import { debug, RxJsLoggingLevel, setRxJsLoggingLevel } from '../common/debug';
 
 @Component({
   selector: 'course',
@@ -38,6 +38,7 @@ export class CourseComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
+    setRxJsLoggingLevel(RxJsLoggingLevel.INFO);
     this.setCourseObservable();
   }
 
@@ -52,12 +53,14 @@ export class CourseComponent implements OnInit, AfterViewInit {
 
   private setLessonObservable() {
     this.lessons$ = this.getSearchStream();
-    // this.getSearchStream().subscribe(console.log);
   }
 
   private getObservable<T>(url: string) {
     const res$ = createHttpObservable<T>(url);
-    return res$.pipe(map((res) => res.payload));
+    return res$.pipe(
+      map((res) => res.payload),
+      debug(RxJsLoggingLevel.DEBUG, 'Courses'),
+    );
   }
 
   private getLessonsUrl(search = '') {
@@ -77,11 +80,11 @@ export class CourseComponent implements OnInit, AfterViewInit {
     return fromEvent<KeyboardEvent>(el, 'keyup').pipe(
       map<KeyboardEvent, string>(getValue),
       startWith(''),
-      //tap((search) => console.log('Search', search)),
-      debug(0, 'Search'),
+      debug(RxJsLoggingLevel.TRACE, 'Lesson search'),
       debounceTime(100),
       distinctUntilChanged(),
       switchMap(filterLessons),
+      debug(RxJsLoggingLevel.DEBUG, 'Lessons'),
     );
   }
 }

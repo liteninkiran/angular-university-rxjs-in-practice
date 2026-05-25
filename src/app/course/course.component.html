@@ -20,7 +20,7 @@
         <th>Description</th>
         <th>Duration</th>
       </thead>
-      @for (lesson of lessons; track lesson) {
+      @for (lesson of lessons; track lesson.id) {
         <tr>
           <td class="seqno-cell">{{ lesson.seqNo }}</td>
           <td class="description-cell">{{ lesson.description }}</td>
