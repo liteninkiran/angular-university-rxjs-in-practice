@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { AsyncSubject, BehaviorSubject, ReplaySubject, Subject } from 'rxjs';
 
 @Component({
   selector: 'about',
@@ -11,7 +11,8 @@ export class AboutComponent implements OnInit {
   constructor() {}
 
   ngOnInit() {
-    const subject = new BehaviorSubject(0);
+    // const subject = new AsyncSubject();
+    const subject = new ReplaySubject();
     const series$ = subject.asObservable();
     series$.subscribe(console.log);
     subject.next(1);
@@ -22,6 +23,7 @@ export class AboutComponent implements OnInit {
       series$.subscribe((val) => {
         console.log('Late', val);
       });
+      subject.next(4);
     }, 3000);
   }
 }
