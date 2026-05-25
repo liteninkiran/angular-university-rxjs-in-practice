@@ -5,7 +5,6 @@ import {
   Inject,
   OnInit,
   ViewChild,
-  ViewEncapsulation,
 } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Course, CourseCategory } from '../model/course';
@@ -17,13 +16,7 @@ import {
 } from '@angular/forms';
 import moment from 'moment';
 import { fromEvent } from 'rxjs';
-import {
-  concatMap,
-  distinctUntilChanged,
-  exhaustMap,
-  filter,
-  mergeMap,
-} from 'rxjs/operators';
+import { exhaustMap, filter } from 'rxjs/operators';
 import { fromPromise } from 'rxjs/internal-compatibility';
 
 type CourseData = {
@@ -37,16 +30,9 @@ type CourseForm = {
   [K in keyof CourseData]: FormControl<CourseData[K]>;
 };
 
-/*
-type CourseForm = {
-  description: FormControl<string>;
-  category: FormControl<CourseCategory>;
-  releasedAt: FormControl<moment.Moment>;
-  longDescription: FormControl<string>;
-}
-*/
-
 type Changes = Partial<CourseData>;
+
+type SaveButton = ElementRef<HTMLButtonElement>;
 
 const getInit = (changes: Changes): RequestInit => ({
   method: 'PUT',
@@ -67,8 +53,7 @@ export class CourseDialogComponent implements OnInit, AfterViewInit {
   form: FormGroup<CourseForm>;
   course: Course;
 
-  @ViewChild('saveButton', { read: ElementRef })
-  saveButton!: ElementRef<HTMLButtonElement>;
+  @ViewChild('saveBtn', { read: ElementRef }) saveButton!: SaveButton;
   @ViewChild('searchInput', { static: true }) searchInput!: ElementRef;
 
   constructor(
@@ -77,9 +62,7 @@ export class CourseDialogComponent implements OnInit, AfterViewInit {
     @Inject(MAT_DIALOG_DATA) course: Course,
   ) {
     this.course = course;
-    this.form = this.formBuilder.nonNullable.group<CourseForm>(
-      this.getCourseForm(),
-    );
+    this.form = this.getCourseForm();
   }
 
   ngOnInit() {
@@ -111,14 +94,15 @@ export class CourseDialogComponent implements OnInit, AfterViewInit {
     saveStream$.subscribe();
   }
 
-  getCourseForm(): CourseForm {
+  getCourseForm() {
     const fb = this.formBuilder.nonNullable;
     const rqd = Validators.required;
-    return {
+    const controls: CourseForm = {
       description: fb.control(this.course.description, rqd),
       category: fb.control(this.course.category, rqd),
       releasedAt: fb.control(moment(), rqd),
       longDescription: fb.control(this.course.longDescription, rqd),
     };
+    return fb.group<CourseForm>(controls);
   }
 }

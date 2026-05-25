@@ -10,4 +10,4 @@ export type Course = {
 
 export type CourseCategory = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
 
-export type Courses = Course[];
+export type Courses = Record<string, Course>;

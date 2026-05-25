@@ -6,23 +6,13 @@ import {
   ViewChild,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Course, Courses } from '../model/course';
-import {
-  debounceTime,
-  distinctUntilChanged,
-  startWith,
-  tap,
-  delay,
-  map,
-  concatMap,
-  switchMap,
-  withLatestFrom,
-  concatAll,
-  shareReplay,
-} from 'rxjs/operators';
-import { merge, fromEvent, Observable, concat } from 'rxjs';
+import { Course } from '../model/course';
+import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
+import { fromEvent, Observable } from 'rxjs';
 import { Lesson } from '../model/lesson';
 import { createHttpObservable } from '../common/util';
+
+type Setter<T> = (obs$: Observable<T>) => void;
 
 @Component({
   selector: 'course',
@@ -45,20 +35,39 @@ export class CourseComponent implements OnInit, AfterViewInit {
     this.setLessonObservable();
   }
 
-  ngAfterViewInit() {}
+  ngAfterViewInit() {
+    this.setStream();
+  }
 
-  setCourseObservable() {
+  private setCourseObservable() {
     const url = `/api/courses/${this.courseId}`;
-    this.setObservable<Course[]>(url, (obs) => (this.course$ = obs));
+    this.setObservable<Course[]>(url, (obs) => {
+      this.course$ = obs;
+    });
   }
 
-  setLessonObservable() {
+  private setLessonObservable() {
     const url = `/api/lessons?courseId=${this.courseId}&pageSize=100`;
-    this.setObservable<Lesson[]>(url, (obs) => (this.lessons$ = obs));
+    this.setObservable<Lesson[]>(url, (obs) => {
+      this.lessons$ = obs;
+    });
   }
 
-  setObservable<T>(url: string, setter: (obs$: Observable<T>) => void) {
+  private setObservable<T>(url: string, setter: Setter<T>) {
     const res$ = createHttpObservable<T>(url);
     setter(res$.pipe(map((res) => res.payload)));
+  }
+
+  private setStream() {
+    const el = this.input.nativeElement;
+    const getValue = (event: KeyboardEvent) =>
+      (event.target as HTMLInputElement).value;
+    const event$ = fromEvent<KeyboardEvent>(el, 'keyup');
+    const stream$ = event$.pipe(
+      map(getValue),
+      debounceTime(400),
+      distinctUntilChanged(),
+    );
+    stream$.subscribe(console.log);
   }
 }
