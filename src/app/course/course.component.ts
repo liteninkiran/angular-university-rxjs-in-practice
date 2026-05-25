@@ -15,10 +15,9 @@ import {
   switchMap,
   tap,
 } from 'rxjs/operators';
-import { fromEvent, Observable } from 'rxjs';
+import { forkJoin, fromEvent, Observable } from 'rxjs';
 import { Lesson } from '../model/lesson';
 import { createHttpObservable } from '../common/util';
-import { debug, RxJsLoggingLevel, setRxJsLoggingLevel } from '../common/debug';
 
 @Component({
   selector: 'course',
@@ -38,7 +37,6 @@ export class CourseComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    setRxJsLoggingLevel(RxJsLoggingLevel.INFO);
     this.setCourseObservable();
   }
 
@@ -48,7 +46,16 @@ export class CourseComponent implements OnInit, AfterViewInit {
 
   private setCourseObservable() {
     const url = `/api/courses/${this.courseId}`;
-    this.course$ = this.getObservable<Course[]>(url);
+    const course$ = this.getObservable<Course[]>(url);
+    const lessons$ = this.getObservable<Lesson[]>(this.getLessonsUrl());
+    forkJoin([course$, lessons$])
+      .pipe(
+        tap(([course, lessons]) => {
+          console.log('course', course);
+          console.log('lessons', lessons);
+        }),
+      )
+      .subscribe();
   }
 
   private setLessonObservable() {
@@ -57,10 +64,7 @@ export class CourseComponent implements OnInit, AfterViewInit {
 
   private getObservable<T>(url: string) {
     const res$ = createHttpObservable<T>(url);
-    return res$.pipe(
-      map((res) => res.payload),
-      debug(RxJsLoggingLevel.DEBUG, 'Courses'),
-    );
+    return res$.pipe(map((res) => res.payload));
   }
 
   private getLessonsUrl(search = '') {
@@ -80,11 +84,9 @@ export class CourseComponent implements OnInit, AfterViewInit {
     return fromEvent<KeyboardEvent>(el, 'keyup').pipe(
       map<KeyboardEvent, string>(getValue),
       startWith(''),
-      debug(RxJsLoggingLevel.TRACE, 'Lesson search'),
       debounceTime(100),
       distinctUntilChanged(),
       switchMap(filterLessons),
-      debug(RxJsLoggingLevel.DEBUG, 'Lessons'),
     );
   }
 }
