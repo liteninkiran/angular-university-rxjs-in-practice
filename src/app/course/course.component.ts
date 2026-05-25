@@ -17,6 +17,7 @@ import {
 import { fromEvent, Observable } from 'rxjs';
 import { Lesson } from '../model/lesson';
 import { createHttpObservable } from '../common/util';
+import { Store } from '../common/store.service';
 
 @Component({
   selector: 'course',
@@ -27,11 +28,14 @@ import { createHttpObservable } from '../common/util';
 export class CourseComponent implements OnInit, AfterViewInit {
   course$!: Observable<Course[]>;
   lessons$!: Observable<Lesson[]>;
-  courseId: string;
+  courseId: number;
 
   @ViewChild('searchInput', { static: true }) input!: ElementRef;
 
-  constructor(private route: ActivatedRoute) {
+  constructor(
+    private route: ActivatedRoute,
+    private store: Store,
+  ) {
     this.courseId = this.route.snapshot.params['id'];
   }
 
@@ -44,8 +48,7 @@ export class CourseComponent implements OnInit, AfterViewInit {
   }
 
   private setCourseObservable() {
-    const url = `/api/courses/${this.courseId}`;
-    this.course$ = this.getObservable<Course[]>(url);
+    this.course$ = this.store.selectCourseById(this.courseId);
   }
 
   private setLessonObservable() {

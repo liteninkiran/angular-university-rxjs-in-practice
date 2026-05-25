@@ -32,7 +32,7 @@ export class Store {
       description: changes.description,
     };
     const courses = this.subject.getValue();
-    const courseIndex = courses.findIndex((course) => course.id == courseId);
+    const courseIndex = courses.findIndex((course) => course.id === courseId);
     const newCourses = courses.slice(0);
     const updatedCourse: Course = {
       ...courses[courseIndex],
@@ -49,6 +49,12 @@ export class Store {
     };
     const url = `/api/courses/${courseId}`;
     return fromPromise(fetch(url, options));
+  }
+
+  public selectCourseById(id: number) {
+    return this.courses$.pipe(
+      map((courses) => courses.filter((course) => course.id === id)),
+    );
   }
 
   private getCoursesObservables() {
