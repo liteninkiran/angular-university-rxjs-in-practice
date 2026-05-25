@@ -3,6 +3,7 @@ import { Course } from '../model/course';
 import { Observable, timer } from 'rxjs';
 import { delayWhen, map, retryWhen, shareReplay } from 'rxjs/operators';
 import { advanced, beginner, createHttpObservable } from '../common/util';
+import { Store } from '../common/store.service';
 
 type CoursesObservable = Observable<Course[]>;
 
@@ -16,7 +17,7 @@ export class HomeComponent implements OnInit {
   beginnerCourses$!: CoursesObservable;
   advancedCourses$!: CoursesObservable;
 
-  constructor() {}
+  constructor(private store: Store) {}
 
   ngOnInit() {
     this.setCoursesObservables();
