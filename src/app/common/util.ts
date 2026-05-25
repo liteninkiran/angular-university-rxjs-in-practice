@@ -38,4 +38,8 @@ const advanced = (courses: Course[]) => courses?.filter(byCategory('ADVANCED'));
 const byCategory = (category: CourseCategory) => (course: Course) =>
   course.category === category;
 
-export { beginner, advanced, createHttpObservable };
+export {
+  beginner as beginnerFilter,
+  advanced as advancedFilter,
+  createHttpObservable,
+};
