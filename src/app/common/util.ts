@@ -1,4 +1,5 @@
 import { Observable, Observer } from 'rxjs';
+import { Course, CourseCategory } from '../model/course';
 
 export type HttpResponse<T> = {
   payload: T;
@@ -11,23 +12,21 @@ const emitAndComplete =
     observer.complete();
   };
 
-const checkResponse =
-  <T>() =>
-  (response: Response): Promise<T> => {
-    if (!response.ok) {
-      throw new Error(`Request failed with status code: ${response.status}`);
-    }
-    return response.json();
-  };
-
-export const createHttpObservable = <T>(url: string) => {
+const createHttpObservable = <T>(url: string) => {
   const observer = (observer: Observer<HttpResponse<T>>) => {
     const controller = new AbortController();
     const signal = controller.signal;
 
     fetch(url, { signal })
-      .then(checkResponse<HttpResponse<T>>())
-      .then(emitAndComplete(observer))
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          observer.error(`Request failed with status code: ${response.status}`);
+          throw new Error('HTTP error');
+        }
+      })
+      .then(emitAndComplete<HttpResponse<T>>(observer))
       .catch((err) => {
         observer.error(err);
       });
@@ -37,3 +36,10 @@ export const createHttpObservable = <T>(url: string) => {
 
   return new Observable(observer);
 };
+
+const beginner = (courses: Course[]) => courses?.filter(byCategory('BEGINNER'));
+const advanced = (courses: Course[]) => courses?.filter(byCategory('ADVANCED'));
+const byCategory = (category: CourseCategory) => (course: Course) =>
+  course.category === category;
+
+export { beginner, advanced, createHttpObservable };
