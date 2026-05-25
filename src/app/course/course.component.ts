@@ -13,8 +13,10 @@ import {
   map,
   startWith,
   switchMap,
+  throttle,
+  throttleTime,
 } from 'rxjs/operators';
-import { concat, fromEvent, Observable } from 'rxjs';
+import { fromEvent, interval, Observable } from 'rxjs';
 import { Lesson } from '../model/lesson';
 import { createHttpObservable } from '../common/util';
 
@@ -50,6 +52,7 @@ export class CourseComponent implements OnInit, AfterViewInit {
 
   private setLessonObservable() {
     this.lessons$ = this.getSearchStream();
+    // this.getSearchStream().subscribe(console.log);
   }
 
   private getObservable<T>(url: string) {
@@ -75,6 +78,8 @@ export class CourseComponent implements OnInit, AfterViewInit {
       map<KeyboardEvent, string>(getValue),
       startWith(''),
       debounceTime(100),
+      // throttle(() => interval(500)),
+      // throttleTime(500),
       distinctUntilChanged(),
       switchMap(filterLessons),
     );
