@@ -11,6 +11,7 @@ import {
   debounceTime,
   distinctUntilChanged,
   map,
+  startWith,
   switchMap,
 } from 'rxjs/operators';
 import { concat, fromEvent, Observable } from 'rxjs';
@@ -48,12 +49,7 @@ export class CourseComponent implements OnInit, AfterViewInit {
   }
 
   private setLessonObservable() {
-    const searchLessons$ = this.getSearchStream();
-    const initialLessons$ = this.getObservable<Lesson[]>(this.getLessonsUrl());
-    // initialLessons$ completes immediately
-    // searchLessons$ never completes
-    // concat waits for completion before moving on, so order matters
-    this.lessons$ = concat(initialLessons$, searchLessons$);
+    this.lessons$ = this.getSearchStream();
   }
 
   private getObservable<T>(url: string) {
@@ -76,7 +72,8 @@ export class CourseComponent implements OnInit, AfterViewInit {
     const filterLessons = (search: string) =>
       this.getObservable<Lesson[]>(this.getLessonsUrl(search));
     return fromEvent<KeyboardEvent>(el, 'keyup').pipe(
-      map(getValue),
+      map<KeyboardEvent, string>(getValue),
+      startWith(''),
       debounceTime(100),
       distinctUntilChanged(),
       switchMap(filterLessons),

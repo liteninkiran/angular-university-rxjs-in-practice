@@ -24,15 +24,11 @@ function getError() {
   const dec = getDecimals(rnd);
   const pct = `${(rnd * 100).toFixed(dec)}%`;
 
-  const errRate = 0.3;
-  // const errRate = 0;
+  const errRate = 0;
   // const errRate = 1;
+  // const errRate = 0.7;
 
-  const error = rnd >= errRate;
-
-  console.log(pct, error);
-
-  return error;
+  return rnd <= errRate;
 }
 
 function getDecimals(x: number) {
