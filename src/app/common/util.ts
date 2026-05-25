@@ -1,16 +1,9 @@
 import { Observable, Observer } from 'rxjs';
 import { Course, CourseCategory } from '../model/course';
 
-export type HttpResponse<T> = {
+type HttpResponse<T> = {
   payload: T;
 };
-
-const emitAndComplete =
-  <T>(observer: Observer<T>) =>
-  (body: T) => {
-    observer.next(body);
-    observer.complete();
-  };
 
 const createHttpObservable = <T>(url: string) => {
   const observer = (observer: Observer<HttpResponse<T>>) => {
@@ -26,7 +19,10 @@ const createHttpObservable = <T>(url: string) => {
           throw new Error('HTTP error');
         }
       })
-      .then(emitAndComplete<HttpResponse<T>>(observer))
+      .then((body) => {
+        observer.next(body);
+        observer.complete();
+      })
       .catch((err) => {
         observer.error(err);
       });

@@ -13,9 +13,8 @@ import {
   map,
   startWith,
   switchMap,
-  tap,
 } from 'rxjs/operators';
-import { forkJoin, fromEvent, Observable } from 'rxjs';
+import { fromEvent, Observable } from 'rxjs';
 import { Lesson } from '../model/lesson';
 import { createHttpObservable } from '../common/util';
 
