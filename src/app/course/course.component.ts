@@ -7,12 +7,15 @@ import {
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Course } from '../model/course';
-import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
-import { fromEvent, Observable } from 'rxjs';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  map,
+  switchMap,
+} from 'rxjs/operators';
+import { concat, fromEvent, Observable } from 'rxjs';
 import { Lesson } from '../model/lesson';
 import { createHttpObservable } from '../common/util';
-
-type Setter<T> = (obs$: Observable<T>) => void;
 
 @Component({
   selector: 'course',
@@ -23,51 +26,60 @@ type Setter<T> = (obs$: Observable<T>) => void;
 export class CourseComponent implements OnInit, AfterViewInit {
   course$!: Observable<Course[]>;
   lessons$!: Observable<Lesson[]>;
-  courseId!: string;
+  courseId: string;
 
   @ViewChild('searchInput', { static: true }) input!: ElementRef;
 
-  constructor(private route: ActivatedRoute) {}
+  constructor(private route: ActivatedRoute) {
+    this.courseId = this.route.snapshot.params['id'];
+  }
 
   ngOnInit() {
-    this.courseId = this.route.snapshot.params['id'];
     this.setCourseObservable();
-    this.setLessonObservable();
   }
 
   ngAfterViewInit() {
-    this.setStream();
+    this.setLessonObservable();
   }
 
   private setCourseObservable() {
     const url = `/api/courses/${this.courseId}`;
-    this.setObservable<Course[]>(url, (obs) => {
-      this.course$ = obs;
-    });
+    this.course$ = this.getObservable<Course[]>(url);
   }
 
   private setLessonObservable() {
-    const url = `/api/lessons?courseId=${this.courseId}&pageSize=100`;
-    this.setObservable<Lesson[]>(url, (obs) => {
-      this.lessons$ = obs;
-    });
+    const searchLessons$ = this.getSearchStream();
+    const initialLessons$ = this.getObservable<Lesson[]>(this.getLessonsUrl());
+    // initialLessons$ completes immediately
+    // searchLessons$ never completes
+    // concat waits for completion before moving on, so order matters
+    this.lessons$ = concat(initialLessons$, searchLessons$);
   }
 
-  private setObservable<T>(url: string, setter: Setter<T>) {
+  private getObservable<T>(url: string) {
     const res$ = createHttpObservable<T>(url);
-    setter(res$.pipe(map((res) => res.payload)));
+    return res$.pipe(map((res) => res.payload));
   }
 
-  private setStream() {
+  private getLessonsUrl(search = '') {
+    let url = `/api/lessons?courseId=${this.courseId}&pageSize=100`;
+    if (search) {
+      url += `&filter=${search}`;
+    }
+    return url;
+  }
+
+  private getSearchStream() {
     const el = this.input.nativeElement;
     const getValue = (event: KeyboardEvent) =>
       (event.target as HTMLInputElement).value;
-    const event$ = fromEvent<KeyboardEvent>(el, 'keyup');
-    const stream$ = event$.pipe(
+    const filterLessons = (search: string) =>
+      this.getObservable<Lesson[]>(this.getLessonsUrl(search));
+    return fromEvent<KeyboardEvent>(el, 'keyup').pipe(
       map(getValue),
-      debounceTime(400),
+      debounceTime(100),
       distinctUntilChanged(),
+      switchMap(filterLessons),
     );
-    stream$.subscribe(console.log);
   }
 }
