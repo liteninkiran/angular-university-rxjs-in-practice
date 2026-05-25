@@ -11,14 +11,26 @@ const emitAndComplete =
     observer.complete();
   };
 
+const checkResponse =
+  <T>() =>
+  (response: Response): Promise<T> => {
+    if (!response.ok) {
+      throw new Error(`Request failed with status code: ${response.status}`);
+    }
+    return response.json();
+  };
+
 export const createHttpObservable = <T>(url: string) => {
   const observer = (observer: Observer<HttpResponse<T>>) => {
     const controller = new AbortController();
+    const signal = controller.signal;
 
-    fetch(url, { signal: controller.signal })
-      .then((res) => res.json())
-      .then(emitAndComplete<HttpResponse<T>>(observer))
-      .catch((err) => observer.error(err));
+    fetch(url, { signal })
+      .then(checkResponse<HttpResponse<T>>())
+      .then(emitAndComplete(observer))
+      .catch((err) => {
+        observer.error(err);
+      });
 
     return () => controller.abort();
   };

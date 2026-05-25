@@ -3,12 +3,12 @@ import { COURSES } from './db-data';
 import { Course } from '../src/app/model/course';
 
 export function getAllCourses(req: Request, res: Response) {
-  //   const error = Math.random() >= 0.5;
-  const error = 0;
+  const error = 1;
+  // const error = 0;
 
   if (error) {
-    console.log('ERROR loading courses!');
-    res.status(500).json({ message: 'random error occurred.' });
+    console.log('ERROR loading courses.');
+    res.status(500).json({ message: 'An error occurred.' });
   } else {
     setTimeout(() => {
       res.status(200).json({ payload: Object.values(COURSES) });

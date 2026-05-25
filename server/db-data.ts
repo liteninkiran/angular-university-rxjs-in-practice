@@ -367,6 +367,8 @@ export const LESSONS: Lessons = {
   },
 };
 
+export const COURSE = COURSES['0'];
+
 export function findCourseById(courseId: number) {
   return COURSES[courseId];
 }
