@@ -46,16 +46,7 @@ export class CourseComponent implements OnInit, AfterViewInit {
 
   private setCourseObservable() {
     const url = `/api/courses/${this.courseId}`;
-    const course$ = this.getObservable<Course[]>(url);
-    const lessons$ = this.getObservable<Lesson[]>(this.getLessonsUrl());
-    forkJoin([course$, lessons$])
-      .pipe(
-        tap(([course, lessons]) => {
-          console.log('course', course);
-          console.log('lessons', lessons);
-        }),
-      )
-      .subscribe();
+    this.course$ = this.getObservable<Course[]>(url);
   }
 
   private setLessonObservable() {
